@@ -39,7 +39,7 @@ table$votemargin <-  html %>%
 
 
 #put as numeric 
-putnumeric <- function(dat, want) {
+putnumeric <- function(dat, want) { 
   dat[, want] <- sapply(dat[, want], function(x) gsub("â^'", "-", x))
   dat[, want] <- sapply(dat[, want], function(x) gsub("%", "", x))
   dat[, want] <- sapply(dat[, want], function(x) gsub(",", "", x))
@@ -59,6 +59,7 @@ table$runner_up <-  html %>%
   html_nodes(xpath = '//table[2]') %>% # get table 2
   html_nodes(xpath = '//td[9]//a//text()') %>%  # get column 9 using text()
   html_text()
+  
 
 #Order by year
 table <- table[order(table$Year), ]
@@ -93,28 +94,25 @@ table2 <- wikiURL %>%
   read_html %>% 
   html_nodes("table") %>% 
   .[[3]] %>% 
-  html_table()
-
-#take out some symbols
-table2[,] <- sapply(table2[, ], function(x) gsub("â???"", "-", x))  #minus sign
-table2[,] <- sapply(table2[, ], function(x) gsub("[*]+","", x)) #asterisk
-table2[,] <- sapply(table2[, ], function(x) gsub("*â???", "", x))  #other
-
+  html_table() 
+ 
+#fix problem with encoding 
+table2[,] <- sapply(table2[, ], function(x) iconv(x, "UTF-8", "UTF-8") ) 
 
 #Get votes for winner
-#Find regular expression for number after "-"
-m <- regexpr(".\\s?[0-9]+", table2$Winner)
+#Find regular expression first numbers
+m <- regexpr("\\s?[0-9]+", table2$Winner)
 #Create variable with votes from electoral college
 table2$votes_winner <- regmatches(table2$Winner, m)
 
 #Get votes for runner-up
-#Find regular expression for number after "-"
-m <- regexpr("(.\\s?[0-9]+)", table2$`Other major candidates[27]`) 
+#Find regular expression first numbers
+m <- regexpr("(\\s?[0-9]+)", table2$`Other major candidates[27]`) 
 #Create variable with votes from electoral college
 table2$votes_runner_up <- regmatches(table2$`Other major candidates[27]`, m)
 
 #convert to numeric
-table2[,c(5,6)] <- sapply(table2[,c(5,6)], function(x) as.numeric(trimws(gsub("-", "", x))))
+table2[,c(5,6)] <- sapply(table2[,c(5,6)], function(x) as.numeric((trimws(x))))
 
 #Create Year
 table2$Year <- as.numeric(substring(table2$`Election year`, 1, 4))
