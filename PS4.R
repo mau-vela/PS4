@@ -121,3 +121,6 @@ table2 <- table2[,c(5:7)]
 
 #Merge table with table2 
 finaltable <- merge(table, table2, by="Year")
+
+#Save
+save(finaltable, file = "R/Clase/PS4/FinalData.Rdata")
